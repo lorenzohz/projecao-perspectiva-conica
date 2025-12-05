@@ -152,6 +152,105 @@ const PerspectiveProjection = () => {
         [3, 12, 2],
         [4, 2, 13]
       ]
+    },
+    pacman: {
+      name: 'Pac-Man',
+      vertices: [
+        // --- Lado Direito (z = 3)
+        // 0: Centro do eixo (para a boca)
+        { x: 0, y: 0, z: 3 },
+        // 1: Lábio Superior
+        { x: 2, y: 1, z: 3 },
+        // 2: Topo da Cabeça
+        { x: 0, y: 2, z: 3 },
+        // 3: Parte de Trás
+        { x: -2, y: 0, z: 3 },
+        // 4: Base da Cabeça
+        { x: 0, y: -2, z: 3 },
+        // 5: Lábio Inferior
+        { x: 2, y: -1, z: 3 },
+
+        // --- Lado Esquerdo (z = 4)
+        // 6: Centro do eixo
+        { x: 0, y: 0, z: 4 },
+        // 7: Lábio Superior
+        { x: 2, y: 1, z: 4 },
+        // 8: Topo da Cabeça
+        { x: 0, y: 2, z: 4 },
+        // 9: Parte de Trás
+        { x: -2, y: 0, z: 4 },
+        // 10: Base da Cabeça
+        { x: 0, y: -2, z: 4 },
+        // 11: Lábio Inferior
+        { x: 2, y: -1, z: 4 }
+      ],
+      surfaces: [
+        // Face Lateral Direita (O rosto)
+        [0, 1, 2, 3, 4, 5], 
+
+        // Face Lateral Esquerda
+        [6, 11, 10, 9, 8, 7],
+
+        // Bordas Externas (Pele amarela externa)
+        [1, 7, 8, 2],   // Testa
+        [2, 8, 9, 3],   // Nuca Superior
+        [3, 9, 10, 4],  // Nuca Inferior
+        [4, 10, 11, 5], // Queixo
+
+        // Interior da Boca (O "V" de corte)
+        [0, 5, 11, 6],  // Parte de baixo da boca (chão)
+        [0, 6, 7, 1]    // Parte de cima da boca (céu)
+      ]
+    },
+    Vase: {
+      name: 'Vaso',
+      vertices: [
+        // Nível 0: Base (Chão) - y = -1
+        { x: -1, y: -1, z: 3 },  // 0
+        { x: 1, y: -1, z: 3 },   // 1
+        { x: 1, y: -1, z: 4 },  // 2
+        { x: -1, y: -1, z: 4 }, // 3
+
+        // Nível 1: Bojo (Parte mais larga) - y = 1
+        { x: -2, y: 1, z: 2 },  // 4
+        { x: 2, y: 1, z: 2 },   // 5
+        { x: 2, y: 1, z: 5 },  // 6
+        { x: -2, y: 1, z: 5 }, // 7
+
+        // Nível 2: Pescoço (Estreitamento) - y = 2.5
+        { x: -1, y: 2.5, z: 3 },  // 8
+        { x: 1, y: 2.5, z: 3 },   // 9
+        { x: 1, y: 2.5, z: 4 },  // 10
+        { x: -1, y: 2.5, z: 4 }, // 11
+
+        // Nível 3: Borda (Abertura superior) - y = 3.5
+        { x: -1.5, y: 3.5, z: 2.5 },  // 12
+        { x: 1.5, y: 3.5, z: 2.5 },   // 13
+        { x: 1.5, y: 3.5, z: 4.5 },  // 14
+        { x: -1.5, y: 3.5, z: 4.5 }  // 15
+      ],
+      surfaces: [
+        // Fundo do Vaso (Base fechada)
+        [3, 2, 1, 0],
+
+        // Corpo Inferior (Base -> Bojo)
+        [0, 1, 5, 4], // Frente
+        [1, 2, 6, 5], // Direita
+        [2, 3, 7, 6], // Trás
+        [3, 0, 4, 7], // Esquerda
+
+        // Corpo Superior (Bojo -> Pescoço)
+        [4, 5, 9, 8],   // Frente
+        [5, 6, 10, 9],  // Direita
+        [6, 7, 11, 10], // Trás
+        [7, 4, 8, 11],  // Esquerda
+
+        // Borda Superior (Pescoço -> Abertura)
+        [8, 9, 13, 12],   // Frente
+        [9, 10, 14, 13],  // Direita
+        [10, 11, 15, 14], // Trás
+        [11, 8, 12, 15]   // Esquerda
+      ]
     }
   };
 
@@ -392,100 +491,100 @@ const PerspectiveProjection = () => {
           
           {/* Objeto */}
           <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 0 140px', display: 'flex', flexDirection: 'column'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>OBJETO</h3>
-            <select value={selectedObject} onChange={(e) => setSelectedObject(e.target.value)} style={{width: '100%', padding: '4px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '11px', marginBottom: '8px', border: 'none', color: 'white'}}>
+            <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>OBJETO</h3>
+            <select value={selectedObject} onChange={(e) => setSelectedObject(e.target.value)} style={{width: '100%', padding: '8px 10px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', marginBottom: '8px', border: 'none', color: 'white'}}>
               {Object.entries(objects).map(([key, obj]) => (<option key={key} value={key}>{obj.name}</option>))}
             </select>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px', marginTop: 'auto'}}>
-              <label style={{display: 'flex', alignItems: 'center', fontSize: '11px'}}><input type="checkbox" checked={showOriginal} onChange={(e) => setShowOriginal(e.target.checked)} style={{marginRight: '6px'}} />Original</label>
-              <label style={{display: 'flex', alignItems: 'center', fontSize: '11px'}}><input type="checkbox" checked={showProjection} onChange={(e) => setShowProjection(e.target.checked)} style={{marginRight: '6px'}} />Projeção</label>
-              <label style={{display: 'flex', alignItems: 'center', fontSize: '11px'}}><input type="checkbox" checked={showProjectionLines} onChange={(e) => setShowProjectionLines(e.target.checked)} style={{marginRight: '6px'}} />Raios</label>
+              <label style={{display: 'flex', alignItems: 'center', fontSize: '14px'}}><input type="checkbox" checked={showOriginal} onChange={(e) => setShowOriginal(e.target.checked)} style={{marginRight: '6px'}} />Original</label>
+              <label style={{display: 'flex', alignItems: 'center', fontSize: '14px'}}><input type="checkbox" checked={showProjection} onChange={(e) => setShowProjection(e.target.checked)} style={{marginRight: '6px'}} />Projeção</label>
+              <label style={{display: 'flex', alignItems: 'center', fontSize: '14px'}}><input type="checkbox" checked={showProjectionLines} onChange={(e) => setShowProjectionLines(e.target.checked)} style={{marginRight: '6px'}} />Raios</label>
             </div>
           </div>
 
           {/* Ponto de Vista */}
           <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '220px'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>PONTO DE VISTA C=(a,b,c)</h3>
+            <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>PONTO DE VISTA C=(a,b,c)</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <span style={{fontSize: '11px', width: '20px'}}>a:</span>
+                <span style={{fontSize: '14px', width: '22px'}}>a:</span>
                 <input type="range" min="-15" max="15" step="0.5" value={viewPoint.a} onChange={(e) => setViewPoint({...viewPoint, a: parseFloat(e.target.value)})} style={{flex: 1, height: '4px'}} />
-                <span style={{fontSize: '11px', width: '35px', textAlign: 'right', backgroundColor: '#4b5563', padding: '2px 4px', borderRadius: '3px'}}>{viewPoint.a.toFixed(1)}</span>
+                <span style={{fontSize: '14px', width: '40px', textAlign: 'right', backgroundColor: '#4b5563', padding: '4px 6px', borderRadius: '3px'}}>{viewPoint.a.toFixed(1)}</span>
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <span style={{fontSize: '11px', width: '20px'}}>b:</span>
+                <span style={{fontSize: '14px', width: '22px'}}>b:</span>
                 <input type="range" min="-15" max="15" step="0.5" value={viewPoint.b} onChange={(e) => setViewPoint({...viewPoint, b: parseFloat(e.target.value)})} style={{flex: 1, height: '4px'}} />
-                <span style={{fontSize: '11px', width: '35px', textAlign: 'right', backgroundColor: '#4b5563', padding: '2px 4px', borderRadius: '3px'}}>{viewPoint.b.toFixed(1)}</span>
+                <span style={{fontSize: '14px', width: '40px', textAlign: 'right', backgroundColor: '#4b5563', padding: '4px 6px', borderRadius: '3px'}}>{viewPoint.b.toFixed(1)}</span>
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <span style={{fontSize: '11px', width: '20px'}}>c:</span>
+                <span style={{fontSize: '14px', width: '22px'}}>c:</span>
                 <input type="range" min="-15" max="15" step="0.5" value={viewPoint.c} onChange={(e) => setViewPoint({...viewPoint, c: parseFloat(e.target.value)})} style={{flex: 1, height: '4px'}} />
-                <span style={{fontSize: '11px', width: '35px', textAlign: 'right', backgroundColor: '#4b5563', padding: '2px 4px', borderRadius: '3px'}}>{viewPoint.c.toFixed(1)}</span>
+                <span style={{fontSize: '14px', width: '40px', textAlign: 'right', backgroundColor: '#4b5563', padding: '4px 6px', borderRadius: '3px'}}>{viewPoint.c.toFixed(1)}</span>
               </div>
             </div>
           </div>
 
           {/* P1 */}
           <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P1</h3>
+            <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P1</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>X1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.x} onChange={(e) => updatePlanePoint('p1', 'x', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>X1:</span>
+                <input type="number" step="0.5" value={planePoints.p1.x} onChange={(e) => updatePlanePoint('p1', 'x', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Y1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.y} onChange={(e) => updatePlanePoint('p1', 'y', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>Y1:</span>
+                <input type="number" step="0.5" value={planePoints.p1.y} onChange={(e) => updatePlanePoint('p1', 'y', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Z1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.z} onChange={(e) => updatePlanePoint('p1', 'z', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>Z1:</span>
+                <input type="number" step="0.5" value={planePoints.p1.z} onChange={(e) => updatePlanePoint('p1', 'z', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
             </div>
           </div>
 
           {/* P2 */}
           <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P2</h3>
+            <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P2</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>X2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.x} onChange={(e) => updatePlanePoint('p2', 'x', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>X2:</span>
+                <input type="number" step="0.5" value={planePoints.p2.x} onChange={(e) => updatePlanePoint('p2', 'x', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Y2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.y} onChange={(e) => updatePlanePoint('p2', 'y', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>Y2:</span>
+                <input type="number" step="0.5" value={planePoints.p2.y} onChange={(e) => updatePlanePoint('p2', 'y', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Z2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.z} onChange={(e) => updatePlanePoint('p2', 'z', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>Z2:</span>
+                <input type="number" step="0.5" value={planePoints.p2.z} onChange={(e) => updatePlanePoint('p2', 'z', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
             </div>
           </div>
 
           {/* P3 = R0 */}
           <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P3 = R0</h3>
+            <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P3 = R0</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>X3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.x} onChange={(e) => updatePlanePoint('p3', 'x', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>X3:</span>
+                <input type="number" step="0.5" value={planePoints.p3.x} onChange={(e) => updatePlanePoint('p3', 'x', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Y3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.y} onChange={(e) => updatePlanePoint('p3', 'y', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>Y3:</span>
+                <input type="number" step="0.5" value={planePoints.p3.y} onChange={(e) => updatePlanePoint('p3', 'y', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Z3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.z} onChange={(e) => updatePlanePoint('p3', 'z', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
+                <span style={{fontSize: '14px', width: '26px'}}>Z3:</span>
+                <input type="number" step="0.5" value={planePoints.p3.z} onChange={(e) => updatePlanePoint('p3', 'z', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
             </div>
           </div>
 
           {/* Legenda */}
           <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '130px'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#c084fc'}}>LEGENDA</h3>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px'}}>
+            <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#c084fc'}}>LEGENDA</h3>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '14px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}><span style={{width: '10px', height: '10px', backgroundColor: '#22d3ee', borderRadius: '2px', display: 'inline-block'}}></span>Original</div>
               <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}><span style={{width: '10px', height: '10px', backgroundColor: '#ef4444', borderRadius: '2px', display: 'inline-block'}}></span>Projeção</div>
               <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}><span style={{width: '10px', height: '10px', backgroundColor: '#22c55e', borderRadius: '2px', display: 'inline-block'}}></span>Plano</div>
