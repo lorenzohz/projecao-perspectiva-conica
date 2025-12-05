@@ -4,15 +4,18 @@ import { OrbitControls, Line } from '@react-three/drei';
 import * as THREE from 'three';
 
 const PerspectiveProjection = () => {
-  const [viewPoint, setViewPoint] = useState({ a: 5, b: 5, c: 10 });
-  const [planePoints, setPlanePoints] = useState({
+  // Valores iniciais padrão
+  const initialViewPoint = { a: 5, b: 5, c: 10 };
+  const initialPlanePoints = {
     p1: { x: -3, y: 0, z: 0 },
     p2: { x: 3, y: 0, z: 0 },
-    p3: { x: 0, y: 3, z: 0 },
-    r0: { x: 0, y: 0, z: 0 }
-  });
-  
-  const [selectedObject, setSelectedObject] = useState('cube');
+    p3: { x: 0, y: 3, z: 0 }
+  };
+  const initialSelectedObject = 'cube';
+
+  const [viewPoint, setViewPoint] = useState(initialViewPoint);
+  const [planePoints, setPlanePoints] = useState(initialPlanePoints);
+  const [selectedObject, setSelectedObject] = useState(initialSelectedObject);
   const [projectedVertices, setProjectedVertices] = useState([]);
   const [showProjection, setShowProjection] = useState(true);
   const [showOriginal, setShowOriginal] = useState(true);
@@ -175,7 +178,8 @@ const PerspectiveProjection = () => {
   };
 
   const calculateProjectionMatrix = () => {
-    const { p1, p2, p3, r0 } = planePoints;
+    const { p1, p2, p3 } = planePoints;
+    const r0 = p3; // R0 é sempre igual a P3
     const { a, b, c } = viewPoint;
     
     const { nx, ny, nz } = calculateNormal(p1, p2, p3);
@@ -244,7 +248,7 @@ const PerspectiveProjection = () => {
     const v1 = new THREE.Vector3(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z).normalize();
     const v2 = new THREE.Vector3().crossVectors(normal, v1).normalize();
     
-    const center = new THREE.Vector3(planePoints.r0.x, planePoints.r0.y, planePoints.r0.z);
+    const center = new THREE.Vector3(p3.x, p3.y, p3.z); // R0 = P3
     
     return { center, v1, v2, normal };
   };
@@ -295,10 +299,19 @@ const PerspectiveProjection = () => {
     }));
   };
 
+  const resetToDefaults = () => {
+    setViewPoint(initialViewPoint);
+    setPlanePoints(initialPlanePoints);
+    setSelectedObject(initialSelectedObject);
+    setShowOriginal(true);
+    setShowProjection(true);
+    setShowProjectionLines(true);
+  };
+
   return (
-    <div style={{width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#111827', color: 'white'}}>
+    <div style={{width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#111827', color: 'white'}}>
       {/* Visualização 3D */}
-      <div style={{flex: '1', borderBottom: '4px solid #374151'}}>
+      <div style={{height: 'calc(100vh - 180px)', minHeight: '500px', borderBottom: '4px solid #374151'}}>
         <Canvas camera={{ position: [15, 10, 15], fov: 50 }}>
           <ambientLight intensity={0.6} />
           <pointLight position={[10, 10, 10]} intensity={0.8} />
@@ -373,12 +386,12 @@ const PerspectiveProjection = () => {
         </Canvas>
       </div>
 
-      {/* CONTROLES - FORÇANDO HORIZONTAL COM CSS PURO */}
+      {/* CONTROLES */}
       <div style={{height: '180px', backgroundColor: '#1f2937', padding: '12px', overflow: 'auto'}}>
-        <div style={{display: 'flex', flexDirection: 'row', gap: '10px', height: '100%', flexWrap: 'nowrap'}}>
+        <div style={{display: 'flex', flexDirection: 'row', gap: '10px', height: '100%', flexWrap: 'nowrap', minWidth: 'fit-content', width: '100%'}}>
           
           {/* Objeto */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', minWidth: '140px', display: 'flex', flexDirection: 'column'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 0 140px', display: 'flex', flexDirection: 'column'}}>
             <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>OBJETO</h3>
             <select value={selectedObject} onChange={(e) => setSelectedObject(e.target.value)} style={{width: '100%', padding: '4px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '11px', marginBottom: '8px', border: 'none', color: 'white'}}>
               {Object.entries(objects).map(([key, obj]) => (<option key={key} value={key}>{obj.name}</option>))}
@@ -391,7 +404,7 @@ const PerspectiveProjection = () => {
           </div>
 
           {/* Ponto de Vista */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', minWidth: '220px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '220px'}}>
             <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>PONTO DE VISTA C=(a,b,c)</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -413,7 +426,7 @@ const PerspectiveProjection = () => {
           </div>
 
           {/* P1 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', minWidth: '120px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
             <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P1</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
@@ -432,7 +445,7 @@ const PerspectiveProjection = () => {
           </div>
 
           {/* P2 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', minWidth: '120px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
             <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P2</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
@@ -450,9 +463,9 @@ const PerspectiveProjection = () => {
             </div>
           </div>
 
-          {/* P3 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', minWidth: '120px'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P3</h3>
+          {/* P3 = R0 */}
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
+            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P3 = R0</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '11px', width: '22px'}}>X3:</span>
@@ -469,27 +482,8 @@ const PerspectiveProjection = () => {
             </div>
           </div>
 
-          {/* R0 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', minWidth: '120px'}}>
-            <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#60a5fa'}}>R0</h3>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>X0:</span>
-                <input type="number" step="0.5" value={planePoints.r0.x} onChange={(e) => updatePlanePoint('r0', 'x', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
-              </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Y0:</span>
-                <input type="number" step="0.5" value={planePoints.r0.y} onChange={(e) => updatePlanePoint('r0', 'y', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
-              </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '11px', width: '22px'}}>Z0:</span>
-                <input type="number" step="0.5" value={planePoints.r0.z} onChange={(e) => updatePlanePoint('r0', 'z', e.target.value)} style={{flex: 1, padding: '2px 4px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '11px', border: 'none', color: 'white'}} />
-              </div>
-            </div>
-          </div>
-
           {/* Legenda */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', minWidth: '130px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '130px'}}>
             <h3 style={{fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', color: '#c084fc'}}>LEGENDA</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}><span style={{width: '10px', height: '10px', backgroundColor: '#22d3ee', borderRadius: '2px', display: 'inline-block'}}></span>Original</div>
@@ -500,6 +494,70 @@ const PerspectiveProjection = () => {
             </div>
           </div>
 
+          {/* Reset */}
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 0 100px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <button 
+              onClick={resetToDefaults}
+              style={{
+                backgroundColor: '#dc2626',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+                width: '100%'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#b91c1c'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#dc2626'}
+            >
+              🔄 RESETAR
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      {/* EXPLICAÇÃO */}
+      <div style={{backgroundColor: '#0f172a', padding: '16px', borderTop: '2px solid #374151'}}>
+        <div style={{maxWidth: '1400px', margin: '0 auto'}}>
+          <h2 style={{fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#fbbf24', textTransform: 'uppercase'}}>📚 Como Funciona a Projeção Perspectiva Cônica</h2>
+          
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', fontSize: '12px', lineHeight: '1.6'}}>
+            
+            <div style={{backgroundColor: '#1e293b', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #fbbf24'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '6px', color: '#fbbf24'}}>🎯 Ponto de Vista (C)</h3>
+              <p style={{color: '#cbd5e1'}}>Define a posição do observador no espaço 3D através das coordenadas (a, b, c). É a partir deste ponto que os raios de projeção partem em direção aos vértices do objeto.</p>
+            </div>
+
+            <div style={{backgroundColor: '#1e293b', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #4ade80'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '6px', color: '#4ade80'}}>📐 Plano de Projeção (P1, P2, P3)</h3>
+              <p style={{color: '#cbd5e1'}}>Definido por três pontos não colineares. O ponto P3 também serve como origem (R0) do plano. A projeção dos objetos 3D é renderizada sobre este plano, formando a imagem 2D.</p>
+            </div>
+
+            <div style={{backgroundColor: '#1e293b', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #22d3ee'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '6px', color: '#22d3ee'}}>🔷 Objeto Original</h3>
+              <p style={{color: '#cbd5e1'}}>Representado em cyan, é o objeto 3D posicionado no espaço. Cada vértice do objeto possui coordenadas (x, y, z) que serão projetadas no plano.</p>
+            </div>
+
+            <div style={{backgroundColor: '#1e293b', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #ef4444'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '6px', color: '#ef4444'}}>🔴 Projeção</h3>
+              <p style={{color: '#cbd5e1'}}>Em vermelho, mostra o resultado da projeção perspectiva. Cada vértice do objeto original é projetado no plano através de raios que partem do ponto de vista.</p>
+            </div>
+
+            <div style={{backgroundColor: '#1e293b', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #9ca3af'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '6px', color: '#9ca3af'}}>📏 Raios de Projeção</h3>
+              <p style={{color: '#cbd5e1'}}>Linhas cinzas que conectam cada vértice do objeto ao ponto de vista. A interseção destes raios com o plano de projeção determina a posição dos pontos projetados.</p>
+            </div>
+
+            <div style={{backgroundColor: '#1e293b', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #c084fc'}}>
+              <h3 style={{fontWeight: 'bold', marginBottom: '6px', color: '#c084fc'}}>💡 Dica de Uso</h3>
+              <p style={{color: '#cbd5e1'}}>Experimente mover o ponto de vista mais próximo ou mais longe do objeto. Quanto mais próximo, mais pronunciada é a perspectiva. Use o mouse para rotacionar a câmera na visualização 3D.</p>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>
