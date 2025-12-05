@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/projecao-perspectiva-conica/static/css/main.e6c13ad2.css",
+    "main.js": "/projecao-perspectiva-conica/static/js/main.1e2ce91f.js",
+    "index.html": "/projecao-perspectiva-conica/index.html",
+    "main.e6c13ad2.css.map": "/projecao-perspectiva-conica/static/css/main.e6c13ad2.css.map",
+    "main.1e2ce91f.js.map": "/projecao-perspectiva-conica/static/js/main.1e2ce91f.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.1e2ce91f.js"
+  ]
+}
