@@ -2,7 +2,7 @@
   "name": "projecao-3d",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Mathayuz.github.io/visualization-system-cg",
+  "homepage": "https://lorenzohz.github.io/projecao-perspectiva-conica",
   "dependencies": {
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
