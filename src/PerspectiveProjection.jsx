@@ -291,7 +291,7 @@ const PerspectiveProjection = () => {
       [d + a * nx, a * ny, a * nz, -a * d0],
       [b * nx, d + b * ny, b * nz, -b * d0],
       [c * nx, c * ny, d + c * nz, -c * d0],
-      [nx, ny, nz, d0 - d1]
+      [nx, ny, nz, -d1]
     ];
     
     return { matrix, normal: { nx, ny, nz }, d0, d1, d };
