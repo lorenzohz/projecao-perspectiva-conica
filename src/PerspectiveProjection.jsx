@@ -21,6 +21,8 @@ const PerspectiveProjection = () => {
   const [showOriginal, setShowOriginal] = useState(true);
   const [showProjectionLines, setShowProjectionLines] = useState(true);
   const [planeSize, setPlaneSize] = useState(15);
+  const [showViewportOverlay, setShowViewportOverlay] = useState(false);
+  const [overlaySize, setOverlaySize] = useState({ width: 400, height: 400 });
 
   const objects = {
     cube: {
@@ -398,6 +400,173 @@ const PerspectiveProjection = () => {
     }));
   };
 
+  const calculateWindowViewportTransform = (width = overlaySize.width, height = overlaySize.height) => {
+    if (!projectedVertices || projectedVertices.length === 0) {
+      return { windowMin: { x: 0, y: 0 }, windowMax: { x: 1, y: 1 }, transformedVertices: [] };
+    }
+
+    // Encontra os limites da janela (bounding box dos pontos projetados)
+    const xCoords = projectedVertices.map(v => v.x);
+    const yCoords = projectedVertices.map(v => v.y);
+    
+    const xMin = Math.min(...xCoords);
+    const xMax = Math.max(...xCoords);
+    const yMin = Math.min(...yCoords);
+    const yMax = Math.max(...yCoords);
+
+    // Define a viewport (área de desenho no overlay)
+    const padding = 25;
+    const viewportWidth = width - (padding * 2) - 20;
+    const viewportHeight = height - (padding * 2) - 80;
+    const viewportX = padding;
+    const viewportY = padding;
+
+    // Calcula a transformação
+    const scaleX = viewportWidth / (xMax - xMin);
+    const scaleY = viewportHeight / (yMax - yMin);
+    const scale = Math.min(scaleX, scaleY) * 0.9; // Usa 90% do espaço
+
+    const transformedVertices = projectedVertices.map(v => ({
+      x: viewportX + (v.x - xMin) * scale + (viewportWidth - (xMax - xMin) * scale) / 2,
+      y: viewportY + (yMax - v.y) * scale + (viewportHeight - (yMax - yMin) * scale) / 2, // Inverte Y
+      original: v
+    }));
+
+    return {
+      windowMin: { x: xMin, y: yMin },
+      windowMax: { x: xMax, y: yMax },
+      transformedVertices,
+      viewport: { x: viewportX, y: viewportY, width: viewportWidth, height: viewportHeight }
+    };
+  };
+
+  const ViewportOverlay = () => {
+    const overlayRef = React.useRef(null);
+    const [currentSize, setCurrentSize] = useState(overlaySize);
+
+    useEffect(() => {
+      if (!overlayRef.current) return;
+
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (let entry of entries) {
+          const { width, height } = entry.contentRect;
+          setCurrentSize({ width, height });
+        }
+      });
+
+      resizeObserver.observe(overlayRef.current);
+
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }, []);
+
+    const { windowMin, windowMax, transformedVertices, viewport } = calculateWindowViewportTransform(currentSize.width, currentSize.height);
+
+    const svgWidth = currentSize.width - 20;
+    const svgHeight = currentSize.height - 80;
+
+    return (
+      <div 
+        ref={overlayRef}
+        style={{
+          position: 'absolute',
+          bottom: '30px',
+          right: '20px',
+          width: `${overlaySize.width}px`,
+          height: `${overlaySize.height}px`,
+          backgroundColor: 'rgba(17, 24, 39, 0.95)',
+          border: '2px solid #fbbf24',
+          borderRadius: '8px',
+          padding: '10px',
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 1000,
+          resize: 'both',
+          overflow: 'auto'
+        }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fbbf24', margin: 0 }}>
+            Transformação Janela→Viewport
+          </h3>
+          <button 
+            onClick={() => setShowViewportOverlay(false)}
+            style={{
+              backgroundColor: '#ef4444',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              fontSize: '11px',
+              cursor: 'pointer'
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{ fontSize: '10px', color: '#9ca3af', marginBottom: '8px' }}>
+          Janela: [{windowMin.x.toFixed(2)}, {windowMin.y.toFixed(2)}] → [{windowMax.x.toFixed(2)}, {windowMax.y.toFixed(2)}]
+        </div>
+
+        <svg 
+          width={svgWidth} 
+          height={svgHeight}
+          style={{ border: '1px solid #374151', backgroundColor: '#1f2937' }}
+        >
+          {/* Viewport border */}
+          {viewport && (
+            <rect
+              x={viewport.x}
+              y={viewport.y}
+              width={viewport.width}
+              height={viewport.height}
+              fill="none"
+              stroke="#22c55e"
+              strokeWidth="2"
+              strokeDasharray="5,5"
+            />
+          )}
+
+          {/* Desenha as superfícies do objeto */}
+          {currentObject && currentObject.surfaces && transformedVertices.length === currentObject.vertices.length && 
+            currentObject.surfaces.map((surface, idx) => {
+              const points = surface.map(i => {
+                const v = transformedVertices[i];
+                return `${v.x},${v.y}`;
+              }).join(' ');
+              
+              return (
+                <polygon
+                  key={`surface-${idx}`}
+                  points={points}
+                  fill="none"
+                  stroke="#ef4444"
+                  strokeWidth="2"
+                />
+              );
+            })
+          }
+
+          {/* Desenha os vértices */}
+          {transformedVertices.map((v, idx) => (
+            <circle
+              key={`vertex-${idx}`}
+              cx={v.x}
+              cy={v.y}
+              r="3"
+              fill="#ef4444"
+            />
+          ))}
+        </svg>
+
+        <div style={{ fontSize: '9px', color: '#6b7280', marginTop: '4px', textAlign: 'center' }}>
+          Viewport: Projeção 2D após transformação
+        </div>
+      </div>
+    );
+  };
+
   const resetToDefaults = () => {
     setViewPoint(initialViewPoint);
     setPlanePoints(initialPlanePoints);
@@ -410,7 +579,7 @@ const PerspectiveProjection = () => {
   return (
     <div style={{width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#111827', color: 'white'}}>
       {/* Visualização 3D */}
-      <div style={{height: 'calc(100vh - 180px)', minHeight: '500px', borderBottom: '4px solid #374151'}}>
+      <div style={{height: 'calc(100vh - 180px)', minHeight: '500px', borderBottom: '4px solid #374151', position: 'relative'}}>
         <Canvas camera={{ position: [15, 10, 15], fov: 50 }}>
           <ambientLight intensity={0.6} />
           <pointLight position={[10, 10, 10]} intensity={0.8} />
@@ -483,14 +652,17 @@ const PerspectiveProjection = () => {
             </mesh>
           ))}
         </Canvas>
+        
+        {/* Viewport Overlay */}
+        {showViewportOverlay && <ViewportOverlay />}
       </div>
 
       {/* CONTROLES */}
-      <div style={{height: '180px', backgroundColor: '#1f2937', padding: '12px', overflow: 'auto'}}>
-        <div style={{display: 'flex', flexDirection: 'row', gap: '10px', height: '100%', flexWrap: 'nowrap', minWidth: 'fit-content', width: '100%'}}>
+      <div style={{minHeight: '180px', backgroundColor: '#1f2937', padding: '12px', overflow: 'auto'}}>
+        <div style={{display: 'flex', flexDirection: 'row', gap: '10px', flexWrap: 'wrap', alignItems: 'stretch'}}>
           
           {/* Objeto */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 0 140px', display: 'flex', flexDirection: 'column'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', display: 'flex', flexDirection: 'column', minWidth: '140px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>OBJETO</h3>
             <select value={selectedObject} onChange={(e) => setSelectedObject(e.target.value)} style={{width: '100%', padding: '8px 10px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', marginBottom: '8px', border: 'none', color: 'white'}}>
               {Object.entries(objects).map(([key, obj]) => (<option key={key} value={key}>{obj.name}</option>))}
@@ -503,7 +675,7 @@ const PerspectiveProjection = () => {
           </div>
 
           {/* Ponto de Vista */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '220px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1 1 auto', minWidth: '220px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#fbbf24'}}>PONTO DE VISTA C=(a,b,c)</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -525,64 +697,64 @@ const PerspectiveProjection = () => {
           </div>
 
           {/* P1 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '100px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P1</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>X1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.x} onChange={(e) => updatePlanePoint('p1', 'x', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p1.x} onChange={(e) => updatePlanePoint('p1', 'x', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>Y1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.y} onChange={(e) => updatePlanePoint('p1', 'y', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p1.y} onChange={(e) => updatePlanePoint('p1', 'y', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>Z1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.z} onChange={(e) => updatePlanePoint('p1', 'z', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p1.z} onChange={(e) => updatePlanePoint('p1', 'z', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
             </div>
           </div>
 
           {/* P2 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '100px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P2</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>X2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.x} onChange={(e) => updatePlanePoint('p2', 'x', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p2.x} onChange={(e) => updatePlanePoint('p2', 'x', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>Y2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.y} onChange={(e) => updatePlanePoint('p2', 'y', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p2.y} onChange={(e) => updatePlanePoint('p2', 'y', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>Z2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.z} onChange={(e) => updatePlanePoint('p2', 'z', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p2.z} onChange={(e) => updatePlanePoint('p2', 'z', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
             </div>
           </div>
 
           {/* P3 = R0 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '120px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '100px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P3 = R0</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>X3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.x} onChange={(e) => updatePlanePoint('p3', 'x', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p3.x} onChange={(e) => updatePlanePoint('p3', 'x', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>Y3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.y} onChange={(e) => updatePlanePoint('p3', 'y', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p3.y} onChange={(e) => updatePlanePoint('p3', 'y', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
               <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
                 <span style={{fontSize: '14px', width: '26px'}}>Z3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.z} onChange={(e) => updatePlanePoint('p3', 'z', e.target.value)} style={{flex: 1, padding: '5px 8px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+                <input type="number" step="0.5" value={planePoints.p3.z} onChange={(e) => updatePlanePoint('p3', 'z', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
               </div>
             </div>
           </div>
 
           {/* Legenda */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '1', minWidth: '130px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '130px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#c084fc'}}>LEGENDA</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '14px'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}><span style={{width: '10px', height: '10px', backgroundColor: '#22d3ee', borderRadius: '2px', display: 'inline-block'}}></span>Original</div>
@@ -593,8 +765,27 @@ const PerspectiveProjection = () => {
             </div>
           </div>
 
-          {/* Reset */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 0 100px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+          {/* Viewport Toggle & Reset */}
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'space-between', minWidth: '120px'}}>
+            <button 
+              onClick={() => setShowViewportOverlay(!showViewportOverlay)}
+              style={{
+                backgroundColor: showViewportOverlay ? '#10b981' : '#6366f1',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+                flex: 1
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = showViewportOverlay ? '#059669' : '#4f46e5'}
+              onMouseOut={(e) => e.target.style.backgroundColor = showViewportOverlay ? '#10b981' : '#6366f1'}
+            >
+              {showViewportOverlay ? '✓ VIEWPORT' : '📐 VIEWPORT'}
+            </button>
             <button 
               onClick={resetToDefaults}
               style={{
@@ -607,7 +798,7 @@ const PerspectiveProjection = () => {
                 fontWeight: 'bold',
                 cursor: 'pointer',
                 transition: 'background-color 0.2s',
-                width: '100%'
+                flex: 1
               }}
               onMouseOver={(e) => e.target.style.backgroundColor = '#b91c1c'}
               onMouseOut={(e) => e.target.style.backgroundColor = '#dc2626'}
