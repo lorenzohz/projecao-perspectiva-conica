@@ -130,27 +130,34 @@ Define o plano onde a projeção é renderizada através de três pontos não co
 - **P1, P2, P3**: Pontos que definem o plano de projeção
 - **P3 = R0**: O ponto P3 também serve como origem (R0) do plano, evitando inconsistências
 
-Cada ponto possui coordenadas **X, Y, Z** editáveis através de inputs numéricos.
+Cada ponto possui coordenadas **X, Y, Z** editáveis através de inputs numéricos. **Dica**: Ao clicar em um campo, todo o conteúdo é selecionado automaticamente, facilitando a edição de valores (incluindo negativos).
 
 #### 4. Checkboxes de Visualização
 - ☑️ **Original**: Mostra/oculta o objeto 3D original (ciano)
 - ☑️ **Projeção**: Mostra/oculta a projeção no plano (vermelho)
 - ☑️ **Raios**: Mostra/oculta as linhas de projeção do ponto de vista aos vértices
 
-#### 5. Botão Reset 🔄
+#### 5. Transformação Janela→Viewport 📐
+Ativa um overlay que demonstra a transformação de coordenadas da janela (bounding box dos pontos projetados) para a viewport (área de visualização 2D). O overlay:
+- Mostra os limites da janela de visualização
+- Exibe o objeto projetado transformado para coordenadas de tela
+- É redimensionável (arraste o canto inferior direito)
+- Adapta o conteúdo automaticamente ao redimensionar
+
+#### 6. Botão Reset 🔄
 Restaura todos os valores para os padrões iniciais:
 - Ponto de vista: (5, 5, 10)
 - Plano: P1=(-3,0,0), P2=(3,0,0), P3=(0,3,0)
 - Objeto: Cubo
 - Todas as visualizações ativadas
 
-#### 6. Controles de Câmera 3D
+#### 7. Controles de Câmera 3D
 Na visualização 3D, você pode interagir com a cena:
 - **Rotacionar**: Clique e arraste com o botão esquerdo do mouse
 - **Zoom**: Use a roda do mouse (scroll)
 - **Pan**: Clique e arraste com o botão direito do mouse
 
-#### 7. Legenda
+#### 8. Legenda
 Identifica visualmente cada elemento da cena:
 - 🔵 **Ciano**: Objeto original
 - 🔴 **Vermelho**: Projeção
