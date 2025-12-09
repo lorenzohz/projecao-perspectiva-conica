@@ -394,10 +394,21 @@ const PerspectiveProjection = () => {
   };
 
   const updatePlanePoint = (point, axis, value) => {
-    setPlanePoints(prev => ({
-      ...prev,
-      [point]: { ...prev[point], [axis]: parseFloat(value) || 0 }
-    }));
+    // Permite campo vazio, apenas sinal negativo, ou número válido
+    if (value === '' || value === '-' || value === '+') {
+      setPlanePoints(prev => ({
+        ...prev,
+        [point]: { ...prev[point], [axis]: 0 }
+      }));
+    } else {
+      const parsed = parseFloat(value);
+      if (!isNaN(parsed)) {
+        setPlanePoints(prev => ({
+          ...prev,
+          [point]: { ...prev[point], [axis]: parsed }
+        }));
+      }
+    }
   };
 
   const calculateWindowViewportTransform = (width = overlaySize.width, height = overlaySize.height) => {
@@ -512,7 +523,7 @@ const PerspectiveProjection = () => {
         <svg 
           width={svgWidth} 
           height={svgHeight}
-          style={{ border: '1px solid #374151', backgroundColor: '#1f2937' }}
+          style={{ border: '1px solid #374151', backgroundColor: '#1f2937', marginLeft: '10px' }}
         >
           {/* Viewport border */}
           {viewport && (
@@ -697,58 +708,58 @@ const PerspectiveProjection = () => {
           </div>
 
           {/* P1 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '100px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '120px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P1</h3>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>X1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.x} onChange={(e) => updatePlanePoint('p1', 'x', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+            <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>X1:</span>
+                <input type="number" step="0.5" value={planePoints.p1.x} onChange={(e) => updatePlanePoint('p1', 'x', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>Y1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.y} onChange={(e) => updatePlanePoint('p1', 'y', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>Y1:</span>
+                <input type="number" step="0.5" value={planePoints.p1.y} onChange={(e) => updatePlanePoint('p1', 'y', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>Z1:</span>
-                <input type="number" step="0.5" value={planePoints.p1.z} onChange={(e) => updatePlanePoint('p1', 'z', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>Z1:</span>
+                <input type="number" step="0.5" value={planePoints.p1.z} onChange={(e) => updatePlanePoint('p1', 'z', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
             </div>
           </div>
 
           {/* P2 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '100px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '120px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P2</h3>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>X2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.x} onChange={(e) => updatePlanePoint('p2', 'x', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+            <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>X2:</span>
+                <input type="number" step="0.5" value={planePoints.p2.x} onChange={(e) => updatePlanePoint('p2', 'x', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>Y2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.y} onChange={(e) => updatePlanePoint('p2', 'y', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>Y2:</span>
+                <input type="number" step="0.5" value={planePoints.p2.y} onChange={(e) => updatePlanePoint('p2', 'y', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>Z2:</span>
-                <input type="number" step="0.5" value={planePoints.p2.z} onChange={(e) => updatePlanePoint('p2', 'z', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>Z2:</span>
+                <input type="number" step="0.5" value={planePoints.p2.z} onChange={(e) => updatePlanePoint('p2', 'z', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
             </div>
           </div>
 
           {/* P3 = R0 */}
-          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '100px'}}>
+          <div style={{backgroundColor: '#374151', borderRadius: '8px', padding: '10px', flex: '0 1 auto', minWidth: '120px'}}>
             <h3 style={{fontSize: '15px', fontWeight: 'bold', marginBottom: '8px', color: '#4ade80'}}>P3 = R0</h3>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>X3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.x} onChange={(e) => updatePlanePoint('p3', 'x', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+            <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>X3:</span>
+                <input type="number" step="0.5" value={planePoints.p3.x} onChange={(e) => updatePlanePoint('p3', 'x', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>Y3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.y} onChange={(e) => updatePlanePoint('p3', 'y', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>Y3:</span>
+                <input type="number" step="0.5" value={planePoints.p3.y} onChange={(e) => updatePlanePoint('p3', 'y', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
-              <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                <span style={{fontSize: '14px', width: '26px'}}>Z3:</span>
-                <input type="number" step="0.5" value={planePoints.p3.z} onChange={(e) => updatePlanePoint('p3', 'z', e.target.value)} style={{width: '60px', padding: '3px 6px', backgroundColor: '#4b5563', borderRadius: '3px', fontSize: '14px', border: 'none', color: 'white'}} />
+              <div style={{display: 'flex', alignItems: 'center', gap: '6px'}}>
+                <span style={{fontSize: '14px', width: '24px', fontWeight: '500'}}>Z3:</span>
+                <input type="number" step="0.5" value={planePoints.p3.z} onChange={(e) => updatePlanePoint('p3', 'z', e.target.value)} style={{width: '70px', padding: '6px 8px', backgroundColor: '#4b5563', borderRadius: '4px', fontSize: '14px', border: '1px solid #6b7280', color: 'white', outline: 'none'}} onFocus={(e) => { e.target.select(); e.target.style.borderColor = '#4ade80'; }} onBlur={(e) => e.target.style.borderColor = '#6b7280'} />
               </div>
             </div>
           </div>
